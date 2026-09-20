@@ -17,7 +17,13 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 const app = express();
 
 //middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://learnlens-xenq.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "token"],
+  }),
+);
 app.use(express.json());
 
 app.get("/", (req, res) => {
