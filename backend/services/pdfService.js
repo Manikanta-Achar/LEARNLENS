@@ -1,19 +1,39 @@
 import fs from "fs";
-import { PDFParse } from "pdf-parse";
+import PDFParser from "pdf2json";
 
 export const extractPdfText = async (filePath) => {
   try {
-    const dataBuffer = fs.readFileSync(filePath);
+    const pdfBuffer = fs.readFileSync(filePath);
 
-    const parser = new PDFParse({
-      data: dataBuffer,
+    const pdfParser = new PDFParser();
+
+    const text = await new Promise((resolve, reject) => {
+      pdfParser.on("pdfParser_dataError", (error) => {
+        reject(error.parserError);
+      });
+
+      pdfParser.on("pdfParser_dataReady", (pdfData) => {
+        let extractedText = "";
+
+        pdfData.Pages.forEach((page) => {
+          page.Texts.forEach((textItem) => {
+            try {
+              extractedText += decodeURIComponent(textItem.R[0].T) + " ";
+            } catch {
+              extractedText += textItem.R[0].T + " ";
+            }
+          });
+
+          extractedText += "\n";
+        });
+
+        resolve(extractedText);
+      });
+
+      pdfParser.parseBuffer(pdfBuffer);
     });
 
-    const result = await parser.getText();
-
-    await parser.destroy();
-
-    return result.text;
+    return text;
   } catch (error) {
     console.error("PDF extraction error:", error.message);
     throw new Error("Failed to extract PDF text");
