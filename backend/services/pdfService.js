@@ -1,10 +1,7 @@
-import fs from "fs";
 import PDFParser from "pdf2json";
 
-export const extractPdfText = async (filePath) => {
+export const extractPdfText = async (pdfBuffer) => {
   try {
-    const pdfBuffer = fs.readFileSync(filePath);
-
     const pdfParser = new PDFParser();
 
     const text = await new Promise((resolve, reject) => {

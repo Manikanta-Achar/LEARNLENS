@@ -1,4 +1,3 @@
-import fs from "fs";
 import MaterialModel from "../models/materialModel.js";
 import { extractPdfText } from "../services/pdfService.js";
 
@@ -56,25 +55,22 @@ export const uploadPdfMaterial = async (req, res) => {
       });
     }
 
-    // Extract text from PDF
-    const extractedText = await extractPdfText(req.file.path);
+    // Extract text directly from memory buffer
+    const extractedText = await extractPdfText(req.file.buffer);
 
     if (!extractedText.trim()) {
-      fs.unlinkSync(req.file.path);
-
       return res.status(400).json({
         success: false,
         message: "Could not extract text from PDF",
       });
     }
 
-    // Save material
+    // Save extracted PDF text in MongoDB
     const material = await MaterialModel.create({
       userId: req.user._id,
       title,
       type: "pdf",
       content: extractedText,
-      fileUrl: req.file.path,
       status: "uploaded",
     });
 
@@ -85,14 +81,6 @@ export const uploadPdfMaterial = async (req, res) => {
     });
   } catch (error) {
     console.error("PDF upload error:", error.message);
-
-    if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (deleteError) {
-        console.error("File delete error:", deleteError.message);
-      }
-    }
 
     res.status(500).json({
       success: false,

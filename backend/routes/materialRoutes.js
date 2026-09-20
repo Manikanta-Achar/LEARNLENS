@@ -3,26 +3,16 @@ import multer from "multer";
 
 import {
   addTextMaterial,
-  uploadPdfMaterial,
+  addPdfMaterial,
   getMaterials,
 } from "../controllers/materialController.js";
 import { protectRoute } from "../middlewares/authMiddleware.js";
 
-const upload = multer({
-  dest: "uploads/",
-  limits: {
-    fileSize: 10 * 1024 * 1024,
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF files are allowed"));
-    }
-  },
-});
+const materialRouter = express.Router();
 
-export const materialRouter = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
 materialRouter.post("/text", protectRoute, addTextMaterial);
 
@@ -30,7 +20,9 @@ materialRouter.post(
   "/pdf",
   protectRoute,
   upload.single("file"),
-  uploadPdfMaterial,
+  addPdfMaterial,
 );
 
 materialRouter.get("/all", protectRoute, getMaterials);
+
+export { materialRouter };
