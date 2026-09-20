@@ -6,8 +6,7 @@ import {
   uploadPdfMaterial,
   getMaterials,
 } from "../controllers/materialController.js";
-
-import { protectRoute } from "../middleware/authMiddleware.js";
+import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const materialRouter = express.Router();
 
